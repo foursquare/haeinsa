@@ -16,15 +16,15 @@
 package kr.co.vcnc.haeinsa;
 
 import java.io.IOException;
-import java.util.Comparator;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import kr.co.vcnc.haeinsa.HaeinsaTransactionLocal.HaeinsaTransactionLocals;
 import kr.co.vcnc.haeinsa.exception.ConflictException;
 import kr.co.vcnc.haeinsa.exception.RecoverableConflictException;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowKey;
+import kr.co.vcnc.haeinsa.thrift.generated.TRowKeysSet;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowLock;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowLockState;
 
@@ -37,6 +37,12 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Maps;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+
+/*
+ * ################ START NEUTRONIC CHANGES #######################
+ *  Class changed from 'package-private' to 'public' permission.
+ * ################ END NEUTRONIC CHANGES #######################
+ */
 
 /**
  * Representation of single transaction in Haeinsa.
@@ -90,6 +96,14 @@ public class HaeinsaTransaction {
     protected NavigableMap<TRowKey, HaeinsaRowTransaction> getMutationRowStates() {
         return txStates.getMutationRowStates();
     }
+
+    //************************START NEUTRONIC ADDITION******************
+
+    public TRowKeysSet getMutationRows() {
+        return new TRowKeysSet(txStates.getMutationRowStates().keySet());
+    }
+
+    //************************END NEUTRONIC ADDITION******************
 
     /**
      * Indicate whether this transaction has any changes.
@@ -155,6 +169,17 @@ public class HaeinsaTransaction {
     protected void setPrimary(TRowKey primary) {
         this.primary = primary;
     }
+
+    //************************START NEUTRONIC ADDITION******************
+
+    public final UUID uuid = UUID.randomUUID();
+
+    public UUID getId() {
+        return uuid;
+    }
+
+    //************************END NEUTRONIC ADDITION******************
+
 
     HaeinsaTransactionLocals getLocals() {
         if (txLocals == null) {

@@ -24,13 +24,19 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import com.google.common.collect.Maps;
 
+/*
+ * ################ START NEUTRONIC CHANGES #######################
+ *  Class changed from 'package-private' to 'public' permission.
+ * ################ END NEUTRONIC CHANGES #######################
+ */
+
 /**
  * Contains Transaction information of single Table.
  * <p>
  * It have map of {byte[] row -> {@link HaeinsaRowTransaction} and reference to
  * {@link HaeinsaTransaction}
  */
-class HaeinsaTableTransaction {
+public class HaeinsaTableTransaction {
     private final NavigableMap<byte[], HaeinsaRowTransaction> rowStates = Maps.newTreeMap(Bytes.BYTES_COMPARATOR);
     private final HaeinsaTransaction transaction;
 

@@ -69,3 +69,11 @@ struct TRowLock {
     9: optional list<TMutation> mutations,
     10: optional i64 prewriteTimestamp,
 }
+
+################ START NEUTRONIC ADDITION #######################
+
+struct TRowKeysSet {
+    1: required set<TRowKey> rowKeys
+}
+
+################ END NEUTRONIC ADDITION #######################
