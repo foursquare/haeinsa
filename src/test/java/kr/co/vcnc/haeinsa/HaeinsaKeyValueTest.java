@@ -2,44 +2,46 @@ package kr.co.vcnc.haeinsa;
 
 import org.apache.hadoop.hbase.KeyValue;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hbase.KeyValue.Type.*;
 
 public class HaeinsaKeyValueTest {
-  private static final List<KeyValue.Type> TRAVERSAL_ORDER = Arrays.asList(Maximum, DeleteFamily, DeleteColumn, DeleteFamilyVersion, Delete, Put, Minimum);
+  public static final List<KeyValue.Type> TRAVERSAL_ORDER = Arrays.asList(Maximum, DeleteFamily, DeleteColumn, DeleteFamilyVersion, Delete, Put, Minimum);
 
-  @Test
-  public void testComparatorTypeOrdering() {
-    comparatorTypeOrdering(HaeinsaKeyValue.COMPARATOR);
+  @DataProvider(name = "comparator-provider")
+  public Object[][] comparatorProvider() {
+    return new Object[][]{{HaeinsaKeyValue.COMPARATOR}, {HaeinsaKeyValue.REVERSE_COMPARATOR}};
   }
 
-  @Test
-  public void testReverseTypeOrdering() {
-    comparatorTypeOrdering(HaeinsaKeyValue.REVERSE_COMPARATOR);
-  }
-
-  public void comparatorTypeOrdering(Comparator<HaeinsaKeyValue> comparator) {
+  @Test(dataProvider = "comparator-provider")
+  public void testComparatorTypeOrdering(Comparator<HaeinsaKeyValue> comparator) {
     List<HaeinsaKeyValue> expected = sameRowFamilyQualifierAllTypes();
-    List<HaeinsaKeyValue> actual = new ArrayList<>(expected);
+    List<HaeinsaKeyValue> actual = shuffleCopy(expected);
 
-    Collections.sort(actual, comparator);
+    actual.sort(comparator);
 
     Assert.assertEquals(actual, expected);
   }
 
-  List<HaeinsaKeyValue> sameRowFamilyQualifierAllTypes() {
-    ArrayList<HaeinsaKeyValue> all = new ArrayList<>();
-    for (KeyValue.Type type : TRAVERSAL_ORDER) {
-      all.add(new HaeinsaKeyValue(bytes("row"), bytes("family"), bytes("qualifier"), bytes(type.toString()), type));
-    }
-    return all;
+  public static List<HaeinsaKeyValue> sameRowFamilyQualifierAllTypes() {
+    return TRAVERSAL_ORDER.stream()
+        .map(type -> new HaeinsaKeyValue(bytes("row"), bytes("family"), bytes("qualifier"), bytes(type.toString()), type))
+        .collect(Collectors.toList());
   }
 
-  private byte[] bytes(String s) {
+  public static byte[] bytes(String s) {
     return s.getBytes(StandardCharsets.UTF_8);
+  }
+
+  public static <T> List<T> shuffleCopy(List<T> items) {
+    ArrayList<T> newItems = new ArrayList<>(items);
+    Collections.shuffle(newItems, new Random(1));
+    return newItems;
   }
 }
