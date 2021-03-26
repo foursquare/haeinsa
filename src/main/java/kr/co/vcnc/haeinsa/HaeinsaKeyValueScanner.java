@@ -48,7 +48,7 @@ public interface HaeinsaKeyValueScanner {
         @Override
         public int compare(HaeinsaKeyValueScanner o1, HaeinsaKeyValueScanner o2) {
             return ComparisonChain.start()
-                    .compare(o2.peek(), o1.peek(), HaeinsaKeyValue.COMPARATOR)
+                    .compare(o1.peek(), o2.peek(), HaeinsaKeyValue.REVERSE_COMPARATOR)
                     .compare(o1.getSequenceID(), o2.getSequenceID())
                     .result();
         }
