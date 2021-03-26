@@ -1,11 +1,11 @@
 package kr.co.vcnc.haeinsa;
 
 import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,12 +31,8 @@ public class HaeinsaKeyValueTest {
 
   public static List<HaeinsaKeyValue> sameRowFamilyQualifierAllTypes() {
     return TRAVERSAL_ORDER.stream()
-        .map(type -> new HaeinsaKeyValue(bytes("row"), bytes("family"), bytes("qualifier"), bytes(type.toString()), type))
+        .map(type -> new HaeinsaKeyValue(Bytes.toBytes("row"), Bytes.toBytes("family"), Bytes.toBytes("qualifier"), Bytes.toBytes(type.toString()), type))
         .collect(Collectors.toList());
-  }
-
-  public static byte[] bytes(String s) {
-    return s.getBytes(StandardCharsets.UTF_8);
   }
 
   public static <T> List<T> shuffleCopy(List<T> items) {

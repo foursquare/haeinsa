@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowLock;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static kr.co.vcnc.haeinsa.HaeinsaKeyValueTest.bytes;
 import static kr.co.vcnc.haeinsa.HaeinsaKeyValueTest.shuffleCopy;
 
 public class HaeinsaKeyValueScannerTest {
@@ -37,7 +37,7 @@ public class HaeinsaKeyValueScannerTest {
       sorted = Lists.reverse(sorted);
     }
     List<HaeinsaKeyValueScanner> expected = sorted.stream()
-        .map(row -> new SimpleScanner(new HaeinsaKeyValue(bytes(row), bytes("family"), bytes("qualifier"), bytes(row), KeyValue.Type.Put)))
+        .map(row -> new SimpleScanner(new HaeinsaKeyValue(Bytes.toBytes(row), Bytes.toBytes("family"), Bytes.toBytes("qualifier"), Bytes.toBytes(row), KeyValue.Type.Put)))
         .collect(Collectors.toList());
 
     List<HaeinsaKeyValueScanner> actual = shuffleCopy(expected);
