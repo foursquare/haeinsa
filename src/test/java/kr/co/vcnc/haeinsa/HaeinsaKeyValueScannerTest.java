@@ -79,6 +79,11 @@ public class HaeinsaKeyValueScannerTest {
 
     @Override
     public void close() {}
+
+    @Override
+    public String toString() {
+      return peek().toString();
+    }
   }
 
 }
