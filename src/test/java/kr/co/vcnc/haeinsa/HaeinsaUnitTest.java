@@ -18,8 +18,12 @@ package kr.co.vcnc.haeinsa;
 import static kr.co.vcnc.haeinsa.TestingUtility.checkLockChanged;
 import static kr.co.vcnc.haeinsa.TestingUtility.getLock;
 
-import java.util.Iterator;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import kr.co.vcnc.haeinsa.exception.ConflictException;
 import kr.co.vcnc.haeinsa.exception.DanglingRowLockException;
 import kr.co.vcnc.haeinsa.thrift.TRowLocks;
@@ -27,10 +31,12 @@ import kr.co.vcnc.haeinsa.thrift.generated.TRowKey;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowLock;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowLockState;
 
+import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -40,6 +46,7 @@ import org.testng.annotations.Test;
  * HaeinsaWithoutTx test, and HBase migration test.
  */
 public class HaeinsaUnitTest extends HaeinsaTestBase {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HaeinsaUnitTest.class);
 
     @Test
     public void testTransaction() throws Exception {
@@ -1124,4 +1131,142 @@ public class HaeinsaUnitTest extends HaeinsaTestBase {
         testTable.close();
         hTestTable.close();
     }
+
+    @Test
+    public void testForwardScannerAfterDeletion() throws Exception {
+        testScannerAfterDeletion(false);
+    }
+
+    @Test
+    public void testReverseScannerAfterDeletion() throws Exception {
+        testScannerAfterDeletion(true);
+    }
+
+    public void testScannerAfterDeletion(boolean reversed) throws Exception {
+        LOGGER.warn("reversed {}", reversed);
+        final HaeinsaTransactionManager tm = context().getTransactionManager();
+        HaeinsaTransaction tx;
+        try (HaeinsaTableIface testTable = context().getHaeinsaTableIface("test")) {
+            tx = tm.begin();
+            Assert.assertEquals(getList(testTable, tx, "b", "c", reversed).size(), 0);
+            tx.commit();
+
+            HTableInterface hTable = context().getHTableInterface("test");
+            htablePut(hTable, "a-0", "data", "phoneNumber", "");
+            htablePut(hTable, "b-0", "data", "phoneNumber", "");
+            htablePut(hTable, "b-1", "data", "phoneNumber", "");
+            htablePut(hTable, "b-2", "data", "phoneNumber", "");
+            htablePut(hTable, "c-0", "data", "phoneNumber", "");
+
+            HaeinsaResult b0 = new HaeinsaResult(ImmutableList.of(kv("b-0", "data", "phoneNumber", "")));
+            HaeinsaResult b1 = new HaeinsaResult(ImmutableList.of(kv("b-1", "data", "phoneNumber", "")));
+            HaeinsaResult b2 = new HaeinsaResult(ImmutableList.of(kv("b-2", "data", "phoneNumber", "")));
+
+            tx = tm.begin();
+            assertEquals(getList(testTable, tx, "b", "c", reversed), asList(reversed, b0, b1, b2), "data", "phoneNumber", null);
+            testTable.delete(tx, deleteColumns("b-1", "data", "phoneNumber"));
+            assertEquals(getList(testTable, tx, "b", "c", reversed), asList(reversed, b0, b2), "data", "phoneNumber", null);
+            testTable.delete(tx, deleteColumns("b-2", "data", "phoneNumber"));
+            assertEquals(getList(testTable, tx, "b", "c", reversed), asList(reversed, b0), "data", "phoneNumber", null);
+            testTable.delete(tx, deleteColumns("b-0", "data", "phoneNumber"));
+            assertEquals(getList(testTable, tx, "b", "c", reversed), asList(reversed), "data", "phoneNumber", null);
+            tx.commit();
+
+            htablePut(hTable, "b-0", "data", "phoneNumber", "");
+            tx = tm.begin();
+            testTable.delete(tx, deleteColumns("b-0", "data", "phoneNumber"));
+            assertEquals(getList(testTable, tx, "b", "c", reversed), asList(reversed), "data", "phoneNumber", null);
+            tx.commit();
+
+            clearTable(tm, testTable);
+            Assert.assertEquals(getList(testTable, tx, "b", "c", reversed).size(), 0);
+        }
+    }
+
+    public static void assertEquals(Collection<HaeinsaResult> actual, Collection<HaeinsaResult> expected, String family, String qualifier, String message) {
+        if (actual != expected) {
+            if (actual == null || expected == null) {
+                if (message != null) {
+                    Assert.fail(message);
+                } else {
+                    Assert.fail("Collections not equal: expected: " + expected + " and actual: " + actual);
+                }
+            }
+
+            Assert.assertEquals(actual.size(), expected.size(), message + ": lists don't have the same size");
+            Iterator<HaeinsaResult> actIt = actual.iterator();
+            Iterator<HaeinsaResult> expIt = expected.iterator();
+            int i = -1;
+
+            while(actIt.hasNext() && expIt.hasNext()) {
+                ++i;
+                HaeinsaResult e = expIt.next();
+                HaeinsaResult a = actIt.next();
+                String explanation = "Lists differ at element [" + i + "]: " + e + " != " + a;
+                String errorMessage = message == null ? explanation : message + ": " + explanation;
+
+                Assert.assertEquals(a.getRow(), e.getRow(), errorMessage);
+                Assert.assertEquals(a.getValue(Bytes.toBytes(family), Bytes.toBytes(qualifier)),
+                    e.getValue(Bytes.toBytes(family), Bytes.toBytes(qualifier)), errorMessage);
+            }
+
+        }
+    }
+
+    public static <T> List<T> asList(boolean reverse, T... a) {
+        return reverse ? Lists.reverse(Arrays.asList(a)) : Arrays.asList(a);
+    }
+
+    private List<HaeinsaResult> getList(HaeinsaTableIface table, HaeinsaTransaction tx, String start, String stop, boolean reversed) throws IOException {
+        byte[] startB = start.getBytes(StandardCharsets.UTF_8);
+        byte[] stopB = stop.getBytes(StandardCharsets.UTF_8);
+
+        try (HaeinsaResultScanner scanner = table.getScanner(tx, new HaeinsaScan()
+            .setStartRow(reversed ? stopB : startB)
+            .setStopRow(reversed ? startB : stopB)
+            .setReversed(reversed))) {
+            return ImmutableList.copyOf(scanner.iterator());
+        }
+    }
+
+    private HaeinsaDelete deleteColumns(String key, String family, String qualifier) {
+        return new HaeinsaDelete(Bytes.toBytes(key))
+            .deleteColumns(Bytes.toBytes(family), Bytes.toBytes(qualifier));
+    }
+
+    private void tablePut(HaeinsaTransaction tx, HaeinsaTableIface table, String id, String family, String qualifier, String value) throws IOException {
+        HaeinsaPut put = new HaeinsaPut(Bytes.toBytes(id));
+        put.add(Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes.toBytes(value));
+        table.put(tx, put);
+    }
+
+    private void htablePut(HTableInterface htable, String id, String family, String qualifier, String value) throws IOException {
+        Put put = new Put(Bytes.toBytes(id));
+        put.add(Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes.toBytes(value));
+        htable.put(put);
+    }
+
+    private HaeinsaKeyValue kv( String id, String family, String qualifier, String value) {
+        return new HaeinsaKeyValue(Bytes.toBytes(id), Bytes.toBytes(family), Bytes.toBytes(qualifier), Bytes.toBytes(value), KeyValue.Type.Put);
+    }
+
+    private void clearTable(HaeinsaTransactionManager tm, HaeinsaTableIface table) throws IOException {
+        HaeinsaTransaction tx = tm.begin();
+        HaeinsaScan scan = new HaeinsaScan();
+
+        try (HaeinsaResultScanner scanner = table.getScanner(tx, scan)) {
+            for (HaeinsaResult result : scanner) {
+                for (HaeinsaKeyValue kv : result.list()) {
+                    // delete specific kv - delete only if it's not lock family
+                    HaeinsaDelete delete = new HaeinsaDelete(kv.getRow());
+                    // should not return lock by scanner
+                    Assert.assertFalse(Bytes.equals(kv.getFamily(), HaeinsaConstants.LOCK_FAMILY));
+                    delete.deleteColumns(kv.getFamily(), kv.getQualifier());
+                    table.delete(tx, delete);
+                }
+            }
+            tx.commit();
+        }
+    }
+
 }
