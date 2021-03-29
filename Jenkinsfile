@@ -12,7 +12,7 @@ kind: Pod
 spec:
   containers:
   - name: maven
-    image: registry.prod.factual.com/maven-with-thrift:0.2
+    image: registry.prod.factual.com/maven-with-thrift:0.14.1
     command: ['cat']
     tty: true
 """
