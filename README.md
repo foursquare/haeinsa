@@ -1,6 +1,6 @@
 # Haeinsa
 
-[![Build Status](https://travis-ci.org/VCNC/haeinsa.svg?branch=master)](https://travis-ci.org/VCNC/haeinsa)
+test for pr 
 
 Haeinsa is linearly scalable multi-row, multi-table transaction library for HBase.
 Haeinsa uses two-phase locking and optimistic concurrency control for implementing transaction.
