@@ -29,6 +29,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  * Static class for TRowLock (Thrift class) Provide static method to
@@ -41,11 +42,11 @@ public final class TRowLocks {
 
     private static final TProtocolFactory PROTOCOL_FACTORY = new TCompactProtocol.Factory();
 
-    private static TSerializer createSerializer() {
+    private static TSerializer createSerializer() throws TTransportException {
         return new TSerializer(PROTOCOL_FACTORY);
     }
 
-    private static TDeserializer createDeserializer() {
+    private static TDeserializer createDeserializer() throws TTransportException {
         return new TDeserializer(PROTOCOL_FACTORY);
     }
 
@@ -53,9 +54,9 @@ public final class TRowLocks {
         if (rowLockBytes == null) {
             return new TRowLock(ROW_LOCK_VERSION, TRowLockState.STABLE, Long.MIN_VALUE);
         }
-        TRowLock rowLock = new TRowLock();
-        TDeserializer deserializer = createDeserializer();
         try {
+            TRowLock rowLock = new TRowLock();
+            TDeserializer deserializer = createDeserializer();
             deserializer.deserialize(rowLock, rowLockBytes);
             return rowLock;
         } catch (TException e) {
@@ -67,8 +68,8 @@ public final class TRowLocks {
         if (rowLock.getCommitTimestamp() == Long.MIN_VALUE) {
             return null;
         }
-        TSerializer serializer = createSerializer();
         try {
+            TSerializer serializer = createSerializer();
             return serializer.serialize(rowLock);
         } catch (TException e) {
             throw new IOException(e.getMessage(), e);
