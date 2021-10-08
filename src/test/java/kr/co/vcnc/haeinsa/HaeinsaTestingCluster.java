@@ -15,22 +15,18 @@
  */
 package kr.co.vcnc.haeinsa;
 
-import java.io.IOException;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.MiniHBaseCluster;
+import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.util.PoolMap.PoolType;
-import org.testng.internal.annotations.Sets;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class HaeinsaTestingCluster {
     public static HaeinsaTestingCluster INSTANCE;
@@ -68,7 +64,7 @@ public final class HaeinsaTestingCluster {
         haeinsaTablePool = TestingUtility.createHaeinsaTablePool(configuration, threadPool);
         hbaseTablePool = new HTablePool(configuration, 128, PoolType.Reusable);
         transactionManager = new HaeinsaTransactionManager(haeinsaTablePool);
-        createdTableNames = Sets.newHashSet();
+        createdTableNames = new HashSet<>();
     }
 
     public MiniHBaseCluster getCluster() {
