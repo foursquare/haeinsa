@@ -42,7 +42,7 @@ spec:
     }
     stage ('Deploy Maven') {
       when {
-        branch 'master'
+        branch 'emr'
       }
       steps{
         container(name: 'maven') {
