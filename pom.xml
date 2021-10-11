@@ -57,8 +57,8 @@
   </scm>
 
   <properties>
-    <hbase.version>2.2.6</hbase.version>
-    <hadoop.version>3.2.1-amzn-3</hadoop.version>
+    <hbase.version>2.4.4</hbase.version>
+    <hadoop.version>3.2.1-amzn-4</hadoop.version>
     <spotless.version>2.11.0</spotless.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -248,15 +248,15 @@
       <url>https://foursquaredev.jfrog.io/foursquaredev/fsnexus</url>
     </repository>
     <repository>
-      <id>emr-6.3.0-artifacts</id>
-      <name>EMR 6.3.0 Releases Repository</name>
+      <id>emr-6.4.0-artifacts</id>
+      <name>EMR 6.4.0 Releases Repository</name>
       <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-      <url>https://s3.us-west-1.amazonaws.com/us-west-1-emr-artifacts/emr-6.3.0/repos/maven/</url>
+      <url>https://s3.us-west-1.amazonaws.com/us-west-1-emr-artifacts/emr-6.4.0/repos/maven/</url>
     </repository>
   </repositories>
   <pluginRepositories>

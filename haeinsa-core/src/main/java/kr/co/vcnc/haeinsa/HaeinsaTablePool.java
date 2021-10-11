@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import kr.co.vcnc.haeinsa.thrift.generated.TRowLock;
+import kr.co.vcnc.haeinsa.utils.PoolMap;
+import kr.co.vcnc.haeinsa.utils.PoolMap.PoolType;
 import lombok.SneakyThrows;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -25,8 +27,6 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.util.PoolMap;
-import org.apache.hadoop.hbase.util.PoolMap.PoolType;
 
 /** Provide pooling pattern to HaeinsaTable. */
 public class HaeinsaTablePool implements Closeable {
