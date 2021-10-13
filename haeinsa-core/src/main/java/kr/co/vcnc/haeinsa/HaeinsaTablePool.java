@@ -226,7 +226,7 @@ public class HaeinsaTablePool implements Closeable {
 
   protected HaeinsaTableIfaceInternal createHTable(String tableName) {
     return (HaeinsaTableIfaceInternal)
-        this.tableFactory.createHaeinsaTableIface(config, Bytes.toBytes(tableName));
+        this.tableFactory.createHaeinsaTableIface(Bytes.toBytes(tableName));
   }
 
   private void release(HaeinsaTableIface table) throws IOException {

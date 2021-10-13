@@ -14,7 +14,7 @@
 package kr.co.vcnc.haeinsa;
 
 import java.io.IOException;
-import org.apache.hadoop.conf.Configuration;
+
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 
@@ -28,7 +28,7 @@ public class DefaultHaeinsaTableIfaceFactory implements HaeinsaTableIfaceFactory
 
   @lombok.SneakyThrows(IOException.class)
   @Override
-  public HaeinsaTableIface createHaeinsaTableIface(Configuration config, byte[] tableName) {
+  public HaeinsaTableIface createHaeinsaTableIface(byte[] tableName) {
     return new HaeinsaTable(connection.getTable(TableName.valueOf(tableName)));
   }
 
