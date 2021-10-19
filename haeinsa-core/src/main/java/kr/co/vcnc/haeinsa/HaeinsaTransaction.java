@@ -32,10 +32,10 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * ***********************START NEUTRONIC ADDITION***************** 1) Added getMutationRows()
- * method 2) Added getId() method ************************END NEUTRONIC ADDITION*****************
- */
+/*************************START NEUTRONIC ADDITION*****************
+ * 1) Added getMutationRows() method
+ * 2) Added getId() method
+ *************************END NEUTRONIC ADDITION******************/
 
 /**
  * Representation of single transaction in Haeinsa. It contains {@link HaeinsaTableTransaction}s to
