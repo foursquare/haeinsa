@@ -13,15 +13,14 @@
  */
 package kr.co.vcnc.haeinsa;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Table;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 public final class HaeinsaTestingCluster {
   public static HaeinsaTestingCluster INSTANCE;

@@ -14,7 +14,6 @@
 package kr.co.vcnc.haeinsa;
 
 import java.io.IOException;
-
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 

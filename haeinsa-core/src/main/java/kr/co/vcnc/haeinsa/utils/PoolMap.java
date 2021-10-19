@@ -1,19 +1,15 @@
 /**
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package kr.co.vcnc.haeinsa.utils;
@@ -30,26 +26,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.yetus.audience.InterfaceAudience;
 
 /**
+ * The <code>PoolMap</code> maps a key to a collection of values, the elements of which are managed
+ * by a pool. In effect, that collection acts as a shared pool of resources, access to which is
+ * closely controlled as per the semantics of the pool.
  *
- * The <code>PoolMap</code> maps a key to a collection of values, the elements
- * of which are managed by a pool. In effect, that collection acts as a shared
- * pool of resources, access to which is closely controlled as per the semantics
- * of the pool.
+ * <p>In case the size of the pool is set to a non-zero positive number, that is used to cap the
+ * number of resources that a pool may contain for any given key. A size of {@link
+ * Integer#MAX_VALUE} is interpreted as an unbounded pool.
  *
- * <p>
- * In case the size of the pool is set to a non-zero positive number, that is
- * used to cap the number of resources that a pool may contain for any given
- * key. A size of {@link Integer#MAX_VALUE} is interpreted as an unbounded pool.
- * </p>
- *
- * @param <K>
- *          the type of the key to the resource
- * @param <V>
- *          the type of the resource being pooled
+ * @param <K> the type of the key to the resource
+ * @param <V> the type of the resource being pooled
  */
 @InterfaceAudience.Private
 public class PoolMap<K, V> implements Map<K, V> {
@@ -129,7 +118,6 @@ public class PoolMap<K, V> implements Map<K, V> {
     return values;
   }
 
-
   @Override
   public boolean isEmpty() {
     return pools.isEmpty();
@@ -191,22 +179,23 @@ public class PoolMap<K, V> implements Map<K, V> {
       final Pool<V> pool = poolEntry.getValue();
       if (pool != null) {
         for (final V poolValue : pool.values()) {
-          entries.add(new Map.Entry<K, V>() {
-            @Override
-            public K getKey() {
-              return poolKey;
-            }
+          entries.add(
+              new Map.Entry<K, V>() {
+                @Override
+                public K getKey() {
+                  return poolKey;
+                }
 
-            @Override
-            public V getValue() {
-              return poolValue;
-            }
+                @Override
+                public V getValue() {
+                  return poolValue;
+                }
 
-            @Override
-            public V setValue(V value) {
-              return pool.put(value);
-            }
-          });
+                @Override
+                public V setValue(V value) {
+                  return pool.put(value);
+                }
+              });
         }
       }
     }
@@ -228,10 +217,12 @@ public class PoolMap<K, V> implements Map<K, V> {
   }
 
   public enum PoolType {
-    Reusable, ThreadLocal, RoundRobin;
+    Reusable,
+    ThreadLocal,
+    RoundRobin;
 
-    public static PoolType valueOf(String poolTypeName,
-                                   PoolType defaultPoolType, PoolType... allowedPoolTypes) {
+    public static PoolType valueOf(
+        String poolTypeName, PoolType defaultPoolType, PoolType... allowedPoolTypes) {
       PoolType poolType = PoolType.fuzzyMatch(poolTypeName);
       if (poolType != null) {
         boolean allowedType = false;
@@ -281,21 +272,16 @@ public class PoolMap<K, V> implements Map<K, V> {
   }
 
   /**
-   * The <code>ReusablePool</code> represents a {@link PoolMap.Pool} that builds
-   * on the {@link java.util.LinkedList} class. It essentially allows resources to be
-   * checked out, at which point it is removed from this pool. When the resource
-   * is no longer required, it should be returned to the pool in order to be
-   * reused.
+   * The <code>ReusablePool</code> represents a {@link PoolMap.Pool} that builds on the {@link
+   * java.util.LinkedList} class. It essentially allows resources to be checked out, at which point
+   * it is removed from this pool. When the resource is no longer required, it should be returned to
+   * the pool in order to be reused.
    *
-   * <p>
-   * If {@link #maxSize} is set to {@link Integer#MAX_VALUE}, then the size of
-   * the pool is unbounded. Otherwise, it caps the number of consumers that can
-   * check out a resource from this pool to the (non-zero positive) value
-   * specified in {@link #maxSize}.
-   * </p>
+   * <p>If {@link #maxSize} is set to {@link Integer#MAX_VALUE}, then the size of the pool is
+   * unbounded. Otherwise, it caps the number of consumers that can check out a resource from this
+   * pool to the (non-zero positive) value specified in {@link #maxSize}.
    *
-   * @param <R>
-   *          the type of the resource
+   * @param <R> the type of the resource
    */
   @SuppressWarnings("serial")
   public static class ReusablePool<R> extends ConcurrentLinkedQueue<R> implements Pool<R> {
@@ -303,7 +289,6 @@ public class PoolMap<K, V> implements Map<K, V> {
 
     public ReusablePool(int maxSize) {
       this.maxSize = maxSize;
-
     }
 
     @Override
@@ -326,20 +311,15 @@ public class PoolMap<K, V> implements Map<K, V> {
   }
 
   /**
-   * The <code>RoundRobinPool</code> represents a {@link PoolMap.Pool}, which
-   * stores its resources in an {@link ArrayList}. It load-balances access to
-   * its resources by returning a different resource every time a given key is
-   * looked up.
+   * The <code>RoundRobinPool</code> represents a {@link PoolMap.Pool}, which stores its resources
+   * in an {@link ArrayList}. It load-balances access to its resources by returning a different
+   * resource every time a given key is looked up.
    *
-   * <p>
-   * If {@link #maxSize} is set to {@link Integer#MAX_VALUE}, then the size of
-   * the pool is unbounded. Otherwise, it caps the number of resources in this
-   * pool to the (non-zero positive) value specified in {@link #maxSize}.
-   * </p>
+   * <p>If {@link #maxSize} is set to {@link Integer#MAX_VALUE}, then the size of the pool is
+   * unbounded. Otherwise, it caps the number of resources in this pool to the (non-zero positive)
+   * value specified in {@link #maxSize}.
    *
-   * @param <R>
-   *          the type of the resource
-   *
+   * @param <R> the type of the resource
    */
   @SuppressWarnings("serial")
   static class RoundRobinPool<R> extends CopyOnWriteArrayList<R> implements Pool<R> {
@@ -372,27 +352,21 @@ public class PoolMap<K, V> implements Map<K, V> {
     public Collection<R> values() {
       return this;
     }
-
   }
 
   /**
-   * The <code>ThreadLocalPool</code> represents a {@link PoolMap.Pool} that
-   * builds on the {@link ThreadLocal} class. It essentially binds the resource
-   * to the thread from which it is accessed.
+   * The <code>ThreadLocalPool</code> represents a {@link PoolMap.Pool} that builds on the {@link
+   * ThreadLocal} class. It essentially binds the resource to the thread from which it is accessed.
    *
-   * <p>
-   * Note that the size of the pool is essentially bounded by the number of threads
-   * that add resources to this pool.
-   * </p>
+   * <p>Note that the size of the pool is essentially bounded by the number of threads that add
+   * resources to this pool.
    *
-   * @param <R>
-   *          the type of the resource
+   * @param <R> the type of the resource
    */
   static class ThreadLocalPool<R> extends ThreadLocal<R> implements Pool<R> {
     private static final Map<ThreadLocalPool<?>, AtomicInteger> poolSizes = new HashMap<>();
 
-    public ThreadLocalPool() {
-    }
+    public ThreadLocalPool() {}
 
     @Override
     public R put(R resource) {

@@ -224,6 +224,7 @@
           <version>${spotless.version}</version>
           <configuration>
             <java>
+              <toggleOffOn/>
               <importOrder/>
               <removeUnusedImports/>
               <googleJavaFormat>

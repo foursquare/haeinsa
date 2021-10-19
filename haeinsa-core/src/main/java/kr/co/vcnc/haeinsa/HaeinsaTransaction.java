@@ -32,10 +32,12 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// spotless:off
 /*************************START NEUTRONIC ADDITION*****************
  * 1) Added getMutationRows() method
  * 2) Added getId() method
  *************************END NEUTRONIC ADDITION******************/
+// spotless:on
 
 /**
  * Representation of single transaction in Haeinsa. It contains {@link HaeinsaTableTransaction}s to
